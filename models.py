@@ -1,0 +1,59 @@
+from sqlalchemy import create_engine, Column, Boolean, Integer, Float, String, ForeignKey
+from sqlalchemy.orm import declarative_base
+from sqlalchemy_utils.types import ChoiceType
+
+
+# Configuração do banco de dados
+db = create_engine("sqlite:///database.db")
+
+# Base do banco de dados
+Base = declarative_base()
+
+# Tabela de Usuários
+class Usuario(Base):
+    __tablename__ = "usuarios"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    nome = Column("nome", String)
+    email = Column("email", String, nullable=False)
+    senha = Column("senha", String)
+    ativo = Column("ativo", Boolean)
+    admin = Column("admin", Boolean, default=False)
+
+    def __init__(self, nome, email, senha, ativo=True, admin=False):
+        self.nome = nome
+        self.email = email
+        self.senha = senha
+        self.ativo = ativo
+        self.admin = admin
+
+# Tabela de Pedidos
+class Pedido(Base):
+    ___tablename__ = "pedidos"
+
+    STATUS_PEDIDOS = (
+        ("PENDENTE", "PENDENTE"),
+        ("EM PREPARAÇÃO", "EM PREPARAÇÃO"),
+        ("CANCELADO", "CANCELADO"),
+        ("FINALIZADO", "FINALIZADO")
+    )
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    usuario = Column("usuario", ForeignKey("usuarios.id"))
+    status = Column("status", ChoiceType(choices=STATUS_PEDIDOS), String)
+    preco = Column("preco", Float)
+
+    def __init__(self, usuario, status="PENDENTE", preco=0):
+        self.usuario = usuario
+        self.status = status 
+        self.preco = preco
+
+# Itens do Pedido
+class ItemPedido(Base):
+    __tablename__ = "itens_pedido"
+
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    quantidade = Column("quantidade", Integer)
+    sabor = Column("sabor", String)
+    preco_unitario = Column("preco_unitario", Float)
+    pedido = Column("pedido", ForeignKey("pedidos.id"))
